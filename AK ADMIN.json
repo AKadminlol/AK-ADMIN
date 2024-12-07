@@ -1,8 +1,8 @@
 
-wait(5)
-
-getgenv().whitelistedPlayers = {
-    "coolroblox123rock",
+   wait(5)
+   
+   getgenv().whitelistedPlayers = {
+       "coolroblox123rock",
     "Alikhammas1234",
     "YournothimbuddyXD",
     "AK_ADMEN2",
@@ -75,12 +75,12 @@ getgenv().whitelistedPlayers = {
     "tariqsimpson1",
     "username",
     "test",
-    "lucasmom",
-    "lollipop"
-}
-
-getgenv().premiumUsers = {
-    "coolroblox123rock",
+    "ddd",
+    "lucasmom"
+   }
+   
+   getgenv().premiumUsers = {
+       "coolroblox123rock",
     "Mohii012",
     "BroImTiredOfgames",
     "miczilla14",
@@ -139,8 +139,9 @@ getgenv().premiumUsers = {
     "tariqsimpson1",
     "username",
     "test",
-    "lucasmom",
-    "lollipop"
-}
-
-loadstring(game:HttpGet(("https://raw.githubusercontent.com/AKadminlol/AK-ADMIN/main/Bot%20template")))()
+    "ddd",
+    "lucasmom"
+   }
+   
+   loadstring(game:HttpGet(("https://raw.githubusercontent.com/AKadminlol/AK-ADMIN/main/Bot%20template")))()
+   
