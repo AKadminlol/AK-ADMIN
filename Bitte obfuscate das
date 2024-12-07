@@ -1,0 +1,165 @@
+-- Enhanced Authorization GUI System (3-Second Version with Fade)
+local TweenService = game:GetService("TweenService") 
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
+
+-- Safe destroy function with fade
+local function SafeDestroyWithFade(gui)
+    if gui and gui:IsA("ScreenGui") then
+        -- Fade out all elements
+        local fadeTime = 0.5 -- Half second fade
+        
+        for _, obj in pairs(gui:GetDescendants()) do
+            if obj:IsA("Frame") then
+                TweenService:Create(obj, TweenInfo.new(fadeTime), {
+                    BackgroundTransparency = 1
+                }):Play()
+            elseif obj:IsA("TextLabel") then
+                TweenService:Create(obj, TweenInfo.new(fadeTime), {
+                    TextTransparency = 1
+                }):Play()
+            end
+        end
+        
+        -- Destroy after fade
+        task.delay(fadeTime, function()
+            pcall(function()
+                gui:Destroy()
+            end)
+        end)
+    end
+end
+
+-- Force cleanup existing GUIs
+pcall(function()
+    for _, gui in pairs(CoreGui:GetChildren()) do
+        if gui.Name == "PremiumAuthGui" then
+            SafeDestroyWithFade(gui)
+        end
+    end
+end)
+
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PremiumAuthGui"
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.DisplayOrder = 999999
+ScreenGui.IgnoreGuiInset = true
+
+pcall(function()
+    ScreenGui.Parent = CoreGui
+end)
+if not ScreenGui.Parent then
+    ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- Create main elements
+local MainContainer = Instance.new("Frame")
+MainContainer.Name = "MainContainer"
+MainContainer.Size = UDim2.new(1, 0, 1, 0)
+MainContainer.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainContainer.BackgroundTransparency = 0
+MainContainer.Parent = ScreenGui
+
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Name = "LoadingText"
+LoadingText.Size = UDim2.new(0, 400, 0, 50)
+LoadingText.Position = UDim2.new(0.5, -200, 0.45, 0)
+LoadingText.BackgroundTransparency = 1
+LoadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadingText.TextSize = 24
+LoadingText.Font = Enum.Font.GothamSemibold
+LoadingText.Text = "Checking Authorization..."
+LoadingText.Parent = MainContainer
+
+local ProgressContainer = Instance.new("Frame")
+ProgressContainer.Name = "ProgressContainer"
+ProgressContainer.Size = UDim2.new(0, 400, 0, 6)
+ProgressContainer.Position = UDim2.new(0.5, -200, 0.55, 0)
+ProgressContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ProgressContainer.BorderSizePixel = 0
+ProgressContainer.Parent = MainContainer
+
+local ProgressBar = Instance.new("Frame")
+ProgressBar.Name = "ProgressBar"
+ProgressBar.Size = UDim2.new(0, 0, 1, 0)
+ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 255, 128)
+ProgressBar.BorderSizePixel = 0
+ProgressBar.Parent = ProgressContainer
+
+-- Add corners
+local CornerRadius = Instance.new("UICorner")
+CornerRadius.CornerRadius = UDim.new(1, 0)
+CornerRadius:Clone().Parent = ProgressContainer
+CornerRadius:Clone().Parent = ProgressBar
+
+local StatusText = Instance.new("TextLabel")
+StatusText.Name = "StatusText"
+StatusText.Size = UDim2.new(0, 400, 0, 50)
+StatusText.Position = UDim2.new(0.5, -200, 0.65, 0)
+StatusText.BackgroundTransparency = 1
+StatusText.TextColor3 = Color3.fromRGB(200, 200, 200)
+StatusText.TextSize = 18
+StatusText.Font = Enum.Font.GothamMedium
+StatusText.Text = ""
+StatusText.Parent = MainContainer
+
+-- Load admin script function
+local function loadAdminScript()
+    pcall(function()
+        local script = game:HttpGet("https://raw.githubusercontent.com/Alikhammass/MyAdmin/refs/heads/main/Bot%20template")
+        loadstring(script)()
+    end)
+end
+
+-- Check whitelist function
+local function isWhitelisted(player)
+    local success, result = pcall(function()
+        local response = game:HttpGet("https://raw.githubusercontent.com/AKadminlol/AK-ADMIN/refs/heads/main/AK%20ADMIN.json")
+        local data = HttpService:JSONDecode(response)
+        return table.find(data.whitelisted or {}, player.Name) ~= nil
+    end)
+    return success and result
+end
+
+-- Delayed cleanup with fade
+local function startCleanup()
+    task.delay(2.5, function() -- Start fade at 2.5 seconds
+        SafeDestroyWithFade(ScreenGui)
+    end)
+end
+
+-- Authorization process
+local function startAuthorization()
+    local player = Players.LocalPlayer
+    if not player then return end
+
+    -- Start cleanup timer
+    startCleanup()
+
+    -- Animate progress bar
+    TweenService:Create(ProgressBar,
+        TweenInfo.new(2, Enum.EasingStyle.Linear),
+        {Size = UDim2.new(1, 0, 1, 0)}
+    ):Play()
+
+    -- Check authorization
+    local authorized = isWhitelisted(player)
+    
+    if authorized then
+        LoadingText.Text = "Access Granted"
+        StatusText.Text = "Welcome, " .. player.Name
+        StatusText.TextColor3 = Color3.fromRGB(0, 255, 128)
+        ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 255, 128)
+        loadAdminScript()
+    else
+        LoadingText.Text = "Access Denied"
+        StatusText.Text = "User not authorized"
+        StatusText.TextColor3 = Color3.fromRGB(255, 0, 0)
+        ProgressBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end
+
+-- Start the process
+startAuthorization()
